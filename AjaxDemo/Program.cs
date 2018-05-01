@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using AjaxDemo.Models;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace AjaxDemo
 {
@@ -18,6 +20,20 @@ namespace AjaxDemo
                 .UseStartup<Startup>()
                 .UseApplicationInsights()
                 .Build();
+
+            using (var scope = host.Services.CreateScope())
+            {
+                var services = scope.ServiceProvider;
+                try
+                {
+                    var context = services.GetRequiredService<AjaxDemoContext>();
+                    DbInitializer.Initialize(context);
+                }
+                catch (Exception)
+                {
+
+                }
+            }
 
             host.Run();
         }
