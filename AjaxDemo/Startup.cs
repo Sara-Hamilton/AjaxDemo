@@ -2,9 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AjaxDemo.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -18,27 +21,29 @@ namespace AjaxDemo
         {
             var builder = new ConfigurationBuilder()
               .SetBasePath(env.ContentRootPath)
-              .AddEnvironmentVariables();
+              .AddJsonFile("appsettings.json");
             Configuration = builder.Build();
         }
       
         public void ConfigureServices(IServiceCollection services)
-        {
+        { 
+            services.AddEntityFramework()
+            .AddDbContext<AjaxDemoContext>(options =>
+                                      options
+                                           .UseMySql(Configuration["ConnectionStrings:DefaultConnection"]));
             services.AddMvc();
-            //services.AddEntityFrameworkMySql()
-            //.AddDbContext<ToDoListContext>(options =>
-            //                          options
-            //                               .UseMySql(Configuration["ConnectionStrings:DefaultConnection"]));
         }
 
-       
+
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
-            loggerFactory.AddConsole();
+            loggerFactory.AddConsole(Configuration.GetSection("Logging"));
+            loggerFactory.AddDebug();
 
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                app.UseBrowserLink();
             }
 
             app.UseStaticFiles();
